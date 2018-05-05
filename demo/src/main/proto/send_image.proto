@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sendimage;
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.sendimage";
+option java_outer_classname = "SendImageProto";
+
+service SendImage{
+  rpc GetImage (SendRequest) returns (SendReply) {} 
+}
+
+
+message SendRequest {
+  bytes imgdata = 1;
+}
+
+message SendReply {
+  bytes result = 1;
+}

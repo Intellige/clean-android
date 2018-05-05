@@ -48,4 +48,24 @@
         app:srcCompat="@drawable/ic_camera"
         app:useCompatPadding="true"/>
 
+    <EditText
+        android:id="@+id/host"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/take_picture"
+        android:layout_alignParentStart="true"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/host_name"/>
+
+    <EditText
+        android:id="@+id/port"
+        android:layout_width="169dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/host"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/port_name"/>
+
 </RelativeLayout>

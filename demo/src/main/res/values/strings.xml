@@ -22,4 +22,6 @@
     <string name="flash_auto">Flash auto</string>
     <string name="flash_off">Flash off</string>
     <string name="flash_on">Flash on</string>
+    <string name="host_name">主机名</string>
+    <string name="port_name">端口名</string>
 </resources>

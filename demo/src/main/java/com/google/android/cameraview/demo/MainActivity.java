@@ -40,17 +40,28 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.cameraview.AspectRatio;
 import com.google.android.cameraview.CameraView;
+import com.google.protobuf.ByteString;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.examples.sendimage.SendImageGrpc;
+import io.grpc.examples.sendimage.SendReply;
+import io.grpc.examples.sendimage.SendRequest;
 
 /**
  * This demo app saves the taken picture to a constant file.
@@ -59,6 +70,10 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity implements
         ActivityCompat.OnRequestPermissionsResultCallback,
         AspectRatioFragment.Listener {
+
+    private EditText hostEdit;
+    private EditText portEdit;
+
 
     private static final String TAG = "MainActivity";
 
@@ -121,6 +136,9 @@ public class MainActivity extends AppCompatActivity implements
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
         }
+
+        hostEdit = (EditText)findViewById(R.id.host);
+        portEdit = (EditText)findViewById(R.id.port);
     }
 
     @Override
@@ -255,6 +273,27 @@ public class MainActivity extends AppCompatActivity implements
             getBackgroundHandler().post(new Runnable() {
                 @Override
                 public void run() {
+                    String host = hostEdit.getText().toString();
+                    String port = portEdit.getText().toString();
+
+                    try{
+                        ManagedChannel channel = ManagedChannelBuilder.forAddress(host, Integer.valueOf(port)).usePlaintext(true).build();
+                        SendImageGrpc.SendImageBlockingStub stub = SendImageGrpc.newBlockingStub(channel);
+                        ByteString out = ByteString.copyFrom(data);
+                        SendRequest request = SendRequest.newBuilder().setImgdata(out).build();
+                        SendReply reply = stub.getImage(request);
+
+                        byte[] result = reply.getResult().toByteArray();
+                        channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+                    }catch(Exception e){
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        pw.flush();
+                        Log.d(TAG, String.format("Failed... : %n%s", sw));
+                    }
+
+/*
                     File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                             "picture.jpg");
                     OutputStream os = null;
@@ -273,6 +312,9 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         }
                     }
+*/
+
+
                 }
             });
         }
