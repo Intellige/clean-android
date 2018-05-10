@@ -16,10 +16,16 @@
 
 package com.google.android.cameraview.demo;
 
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
+
 import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -41,6 +47,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.cameraview.AspectRatio;
@@ -48,11 +55,14 @@ import com.google.android.cameraview.CameraView;
 import com.google.protobuf.ByteString;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -102,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements
     private int mCurrentFlash;
 
     private CameraView mCameraView;
+    private ImageView imageView;
 
     private Handler mBackgroundHandler;
 
@@ -113,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (mCameraView != null) {
                         mCameraView.takePicture();
                     }
+                  //  imageView.setImageResource(R.drawable.sb);
                     break;
             }
         }
@@ -126,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mCameraView != null) {
             mCameraView.addCallback(mCallback);
         }
+        imageView = (ImageView) findViewById(R.id.imageView);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.take_picture);
         if (fab != null) {
             fab.setOnClickListener(mOnClickListener);
@@ -252,6 +265,69 @@ public class MainActivity extends AppCompatActivity implements
         return mBackgroundHandler;
     }
 
+
+    public static final int MEDIA_TYPE_IMAGE = 1;
+
+
+    /** Create a file Uri for saving an image or video */
+    private static Uri getOutputMediaFileUri(int type){
+        return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+    /** Create a File for saving an image or video */
+    private static File getOutputMediaFile(int type){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "IMG_"+ timeStamp + ".jpg");
+
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+
+            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+            if (pictureFile == null){
+                Log.d(TAG, "Error creating media file, check storage permissions: " );
+                return;
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
+            }
+        }
+    };
+
     private CameraView.Callback mCallback
             = new CameraView.Callback() {
 
@@ -284,6 +360,8 @@ public class MainActivity extends AppCompatActivity implements
                         SendReply reply = stub.getImage(request);
 
                         byte[] result = reply.getResult().toByteArray();
+                        Bitmap bm = BitmapFactory.decodeByteArray(result, 0, result.length);
+                        imageView.setImageBitmap(bm);
                         channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
                     }catch(Exception e){
                         StringWriter sw = new StringWriter();

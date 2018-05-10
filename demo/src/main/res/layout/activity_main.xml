@@ -24,7 +24,7 @@
     <com.google.android.cameraview.CameraView
         android:id="@+id/camera"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="235dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
@@ -50,13 +50,14 @@
 
     <EditText
         android:id="@+id/host"
-        android:layout_width="wrap_content"
+        android:layout_width="194dp"
         android:layout_height="wrap_content"
         android:layout_above="@+id/take_picture"
         android:layout_alignParentStart="true"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/host_name"/>
+        android:text="主机名"
+        tools:ignore="RtlCompat"/>
 
     <EditText
         android:id="@+id/port"
@@ -66,6 +67,16 @@
         android:layout_alignTop="@+id/host"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/port_name"/>
+        android:text="50051"
+        tools:ignore="RtlCompat"/>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="330dp"
+        android:layout_height="205dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="128dp"
+        app:srcCompat="@drawable/huya"/>
 
 </RelativeLayout>
